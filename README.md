@@ -8,12 +8,33 @@ The simulator runs a **230-hour batch** at **12-minute timesteps (1 150 steps to
 
 ## Quick start
 
+### API only
 ```bash
 docker build -t pensimpy .
 docker run -p 8000:8000 pensimpy
 ```
-
 Interactive API docs → **http://localhost:8000/docs**
+
+### API + Jupyter notebook
+```bash
+docker compose up
+```
+
+| Service  | URL |
+|----------|-----|
+| API docs | http://localhost:8000/docs |
+| JupyterLab | http://localhost:8888 (no password) |
+
+Open `pensimpy_demo.ipynb` in JupyterLab. It covers four scenarios in order:
+
+| Section | What it does |
+|---------|-------------|
+| 1 | Full batch, all defaults — one call, full dataframe + plots |
+| 2 | Full batch, custom recipe — compare default vs override |
+| 3 | Full automation run — rule-based predictor drives every 12-min step |
+| 4 | Next N minutes — pause after 48 h, inspect state, resume in phases |
+
+The notebook connects to the API at `http://api:8000` (docker compose hostname). If you run the notebook locally against a separately started API, change `BASE = "http://localhost:8000"` in the setup cell.
 
 ---
 
