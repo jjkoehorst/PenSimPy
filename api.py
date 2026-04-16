@@ -201,7 +201,7 @@ def run_batch(req: BatchRequest):
     """Run a complete 230-hour batch and return all process variables as JSON."""
     recipe_combo = _build_recipe_combo(req.recipe)
     env = PenSimEnv(recipe_combo=recipe_combo, fast=False)
-    df, _ = env.get_batches(random_seed=req.random_seed, include_raman=req.include_raman)
+    (df, _raman), _ = env.get_batches(random_seed=req.random_seed, include_raman=req.include_raman)
     return {
         "num_steps": len(df),
         "columns": list(df.columns),

@@ -10,17 +10,13 @@ services:
       retries: 10
 
   notebook:
-    image: jupyter/scipy-notebook:python-3.8
+    build:
+      context: .
+      dockerfile: Dockerfile.notebook
     ports:
       - "8888:8888"
     volumes:
-      - ./notebooks:/home/jovyan/work
-    environment:
-      - JUPYTER_ENABLE_LAB=yes
-    command: >
-      start-notebook.sh
-      --NotebookApp.token=''
-      --NotebookApp.password=''
+      - ./notebooks:/notebooks
     depends_on:
       api:
         condition: service_healthy
