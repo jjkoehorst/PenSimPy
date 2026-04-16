@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from scipy.integrate import odeint
+from scipy.integrate import odeint, solve_ivp
 from scipy.interpolate import interp1d
 from pensimpy.data.ctrl_flags import CtrlFlags
 from pensimpy.data.batch_data import X0, Xinterp, U, X
@@ -8,7 +8,11 @@ from pensimpy.constants import RAMAN_SPECTRA, RAMAN_WAVENUMBER, STEP_IN_MINUTES,
     NUM_STEPS, WAVENUMBER_LENGTH, MINUTES_PER_HOUR
 from pensimpy.ode.indpensim_ode_py import indpensim_ode_py
 from pensimpy.utils import pid_controller, smooth, get_dataframe, get_observation_data
-import fastodeint
+try:
+    import fastodeint
+    _FASTODEINT_AVAILABLE = True
+except ImportError:
+    _FASTODEINT_AVAILABLE = False
 
 
 class PenSimEnv:
@@ -206,12 +210,13 @@ class PenSimEnv:
         par = self.param_list.copy()
         par.extend(u00)
 
-        if self.fast:
+        if self.fast and _FASTODEINT_AVAILABLE:
             y_sol = fastodeint.integrate(x00, par, t_start, t_end + h_ode, h_ode)
             t_tmp = t_end + h_ode
         else:
-            y_sol = odeint(indpensim_ode_py, x00, t_span, tfirst=True, args=(par,))
-            y_sol = y_sol[-1]
+            result = solve_ivp(indpensim_ode_py, [t_start, t_end + h_ode], x00,
+                               method='Radau', args=(par,), rtol=1e-3, atol=1e-6)
+            y_sol = result.y[:, -1]
             t_tmp = t_span[-1]
 
         # # Defining minimum value for all variables for numerical stability

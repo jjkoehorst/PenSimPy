@@ -9,6 +9,14 @@ def indpensim_ode_py(t, y, par):
     :param par: inputs + params
     :return:
     """
+    # Clamp physically bounded states to prevent domain errors when scipy's
+    # implicit solver evaluates the ODE at speculative (non-physical) points.
+    # All state variables are non-negative physical quantities; clamp them here
+    # so log/exp calls inside the ODE never receive invalid inputs.
+    y = [max(v, 1e-10) for v in y]
+    y[6] = max(y[6], 1e-20)   # H+ concentration — used in log10, needs tighter floor
+    y[7] = max(y[7], 1.0)     # Temperature (K) — used in exp(1/T), must be well above 0
+
     mu_p = par[0]
     mux_max = par[1]
 
